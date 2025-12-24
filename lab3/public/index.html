@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NIGHT CITY: AGENT REGISTRY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #050505;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ff41;
+            background-image: linear-gradient(0deg, transparent 24%, rgba(0, 255, 65, .03) 25%, rgba(0, 255, 65, .03) 26%, transparent 27%, transparent 74%, rgba(0, 255, 65, .03) 75%, rgba(0, 255, 65, .03) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 255, 65, .03) 25%, rgba(0, 255, 65, .03) 26%, transparent 27%, transparent 74%, rgba(0, 255, 65, .03) 75%, rgba(0, 255, 65, .03) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+        }
+        
+        .cyber-card {
+            background-color: #0b0f19;
+            border: 2px solid #fce300;
+            box-shadow: 4px 4px 0px #00f2ff;
+            border-radius: 0;
+        }
+
+        .form-label { color: #fce300; font-weight: bold; text-transform: uppercase; }
+        
+        .form-control, .form-select {
+            background-color: #000;
+            border: 1px solid #333;
+            color: #00f2ff;
+            border-radius: 0;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #111;
+            border-color: #00ff41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            color: #fff;
+        }
+
+        .btn-cyber-primary {
+            background: #fce300;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            text-transform: uppercase;
+            border-radius: 0;
+            padding: 10px 20px;
+        }
+        .btn-cyber-primary:hover {
+            background: #fff;
+            box-shadow: 0 0 15px #fce300;
+        }
+
+        .btn-cyber-danger {
+            border: 1px solid #ff003c;
+            color: #ff003c;
+            background: transparent;
+            border-radius: 0;
+        }
+        .btn-cyber-danger:hover {
+            background: #ff003c;
+            color: #fff;
+        }
+
+        .table {
+            --bs-table-bg: transparent;
+            border-color: #333;
+        }
+        .table thead th {
+            color: #00f2ff;
+            border-bottom: 2px solid #00f2ff;
+            text-transform: uppercase;
+        }
+        .table tbody tr:hover {
+            background-color: rgba(252, 227, 0, 0.1);
+        }
+        
+        h2.glitch {
+            text-shadow: 2px 2px 0px #ff003c, -2px -2px 0px #00f2ff;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+
+    <div class="text-center mb-5">
+        <h2 class="glitch display-4 fw-bold">/// NETRUNNER_DB_V2.0</h2>
+        <p class="text-muted">[SECURE CONNECTION ESTABLISHED]</p>
+    </div>
+
+    <div class="card cyber-card mb-5">
+        <div class="card-body p-4">
+            <h5 class="mb-4 text-white">> UPLOAD NEW DATA</h5>
+            
+            <form name="agentForm" class="row g-3">
+                <input type="hidden" name="id" value="0" />
+
+                <div class="col-md-4">
+                    <label class="form-label">Codename</label>
+                    <input class="form-control" name="codename" placeholder="e.g. Johnny Silverhand" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Class</label>
+                    <select class="form-select" name="role" required>
+                        <option value="Netrunner">Netrunner</option>
+                        <option value="Solo">Solo (Mercenary)</option>
+                        <option value="Techie">Techie</option>
+                        <option value="Corpo">Corpo</option>
+                        <option value="Fixer">Fixer</option>
+                        <option value="Ripperdoc">Ripperdoc</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Cyberware Level %</label>
+                    <input class="form-control" name="level" type="number" min="0" max="100" placeholder="0 - 100" required />
+                </div>
+
+                <div class="col-12 text-end mt-4">
+                    <button id="reset" type="button" class="btn btn-outline-secondary me-2 rounded-0">RESET</button>
+                    <button id="saveBtn" type="submit" class="btn btn-cyber-primary">INITIALIZE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+             <input id="search" class="form-control" placeholder="[SCANNING DATABASE...]">
+        </div>
+        <div class="col-md-6 text-end">
+            <select id="sort" class="form-select d-inline-block w-auto">
+                <option value="">SORT: DEFAULT</option>
+                <option value="codename">CODENAME (A-Z)</option>
+                <option value="level">CYBER-LEVEL (High-Low)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover">
+            <thead>
+            <tr>
+                <th>ID_TAG</th>
+                <th>CODENAME</th>
+                <th>ROLE / CLASS</th>
+                <th>AUGMENTATION</th>
+                <th class="text-end">PROTOCOLS</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let allAgents = [];
+
+    async function loadAgents() {
+        const response = await fetch("/api/agents");
+        allAgents = await response.json();
+        render(allAgents);
+    }
+
+    function render(list) {
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = "";
+        
+        if(list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4" style="color: #555;">[DATABASE EMPTY]</td></tr>`;
+            return;
+        }
+
+        list.forEach(agent => {
+            const tr = document.createElement("tr");
+            tr.dataset.rowid = agent._id;
+
+            let levelColor = 'text-success';
+            if(agent.level > 50) levelColor = 'text-warning';
+            if(agent.level > 80) levelColor = 'text-danger';
+
+            tr.innerHTML = `
+                <td class="text-secondary"><small>${agent._id.slice(-4)}</small></td>
+                <td class="fw-bold" style="color:#fff;">${agent.codename}</td>
+                <td style="color: #00f2ff;">[${agent.role}]</td>
+                <td class="${levelColor} fw-bold">${agent.level}%</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-1 edit rounded-0" data-id="${agent._id}">EDIT</button>
+                    <button class="btn btn-sm btn-cyber-danger delete" data-id="${agent._id}">KILL</button>
+                </td>`;
+
+            tr.querySelector(".edit").onclick = () => loadAgentToForm(agent._id);
+            tr.querySelector(".delete").onclick = () => deleteAgent(agent._id);
+
+            tbody.append(tr);
+        });
+    }
+
+    async function loadAgentToForm(id) {
+        const response = await fetch("/api/agents/" + id);
+        const agent = await response.json();
+        const form = document.forms["agentForm"];
+
+        form.id.value = agent._id;
+        form.codename.value = agent.codename;
+        form.role.value = agent.role;
+        form.level.value = agent.level;
+
+        const btn = document.getElementById("saveBtn");
+        btn.textContent = "UPDATE DATA";
+        btn.classList.add("btn-warning"); 
+        document.querySelector(".card").scrollIntoView({ behavior: "smooth" });
+    }
+
+    document.forms["agentForm"].onsubmit = async e => {
+        e.preventDefault();
+        const form = e.target;
+        
+        const id = form.id.value;
+        const codename = form.codename.value.trim();
+        const role = form.role.value;
+        const level = parseInt(form.level.value);
+
+        const data = { id, codename, role, level };
+
+        if (id == 0) {
+            await fetch("/api/agents", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ codename, role, level })
+            });
+        } else {
+            await fetch("/api/agents", {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(data)
+            });
+        }
+
+        resetForm();
+        await loadAgents();
+    };
+
+    async function deleteAgent(id) {
+        if (!confirm("Terminate this agent contract?")) return;
+        await fetch("/api/agents/" + id, { method: "DELETE" });
+        loadAgents();
+    }
+
+    function resetForm() {
+        const form = document.forms["agentForm"];
+        form.reset();
+        form.id.value = "0";
+        const btn = document.getElementById("saveBtn");
+        btn.textContent = "INITIALIZE";
+        btn.classList.remove("btn-warning");
+    }
+    document.getElementById("reset").addEventListener("click", resetForm);
+
+    document.getElementById("search").oninput = e => {
+        const text = e.target.value.toLowerCase();
+        const filtered = allAgents.filter(u => u.codename.toLowerCase().includes(text));
+        render(filtered);
+    };
+
+    document.getElementById("sort").onchange = e => {
+        const option = e.target.value;
+        let sorted = [...allAgents];
+        if (option === "codename") sorted.sort((a, b) => a.codename.localeCompare(b.codename));
+        if (option === "level") sorted.sort((a, b) => b.level - a.level);
+        render(sorted);
+    };
+
+    loadAgents();
+</script>
+
+</body>
+</html>
