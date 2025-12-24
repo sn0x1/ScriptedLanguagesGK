@@ -1,0 +1,32 @@
+{
+  "name": "lab1",
+  "version": "1.0.0",
+  "description": "lab1 for Scripted Languages",
+  "keywords": [
+    "Scripted",
+    "Languages"
+  ],
+  "homepage": "https://github.com/sn0x1/ScriptedLanguagesGK#readme",
+  "bugs": {
+    "url": "https://github.com/sn0x1/ScriptedLanguagesGK/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sn0x1/ScriptedLanguagesGK.git"
+  },
+  "license": "MIT",
+  "author": "Kostia Golota",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
+  }
+}
